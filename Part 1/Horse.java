@@ -2,13 +2,14 @@
 /**
  * Write a description of class Horse here.
  * 
- * @author hanah
- * @version (a version number or a date)
+ * @author hana
+ * @version (1)
  */
+
 public class Horse
 {
-    //Fields of class Horse
-    
+    // Static field to keep track of the number of Horse objects created
+    private static int horseCount = 0;    
     
       
     //Constructor of class Horse
@@ -17,7 +18,11 @@ public class Horse
      */
     public Horse(char horseSymbol, String horseName, double horseConfidence)
     {
-       
+               if (horseCount >= 3) {
+            throw new IllegalStateException("Cannot create more than 3 Horse objects.");
+        }
+        // Increment the horseCount to track the number of Horse objects created
+        horseCount++;
     }
     
     
