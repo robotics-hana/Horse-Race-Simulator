@@ -21,7 +21,7 @@ a.	‘ls’ can be used to check the paths available; ‘cd’ can be used to pr
 ## Features
 
 - **Start New Race:** Start a ‘new horse race’ by specifying the race length and number of horses.
-- **View History:** View the history of past races, including details of each horse's performance.
+- **View History:** View the history of past races, including details of each horse's past performance.
 - **Leaderboard:** View leaderboard statistics, including the number of wins, falls, and total amount of races for each horse.
 
 ## Usage
