@@ -6,7 +6,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class RaceGUI extends JFrame {
+public class Race extends JFrame {
 
  private int raceLength;
  private int totalHorses;
@@ -19,7 +19,7 @@ public class RaceGUI extends JFrame {
  // Define available horse breeds
  private String[] availableBreeds = {"Thoroughbred", "Quarter Horse", "Arabian", "Appaloosa"};
 
- public RaceGUI() {
+ public Race() {
  showTitlePage(); // Show the title page initially
  }
 
