@@ -706,10 +706,10 @@ public class Race extends JFrame {
 
     private void saveHorseDetailsToFile() {
         // Create a HashSet to store the names of the horses that have been already
-        // created
+        // created to keep a record
         HashSet<String> existingHorses = new HashSet<>();
 
-        // Read existing horse names from the file
+        // reading from the horse details file
         try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -721,7 +721,7 @@ public class Race extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+// writing details to the file
         try (PrintWriter writer = new PrintWriter(new FileWriter(horseDetailsFilePath, true))) {
             for (Horse horse : horses) {
                 if (horse != null) {
