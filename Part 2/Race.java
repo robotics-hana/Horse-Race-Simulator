@@ -1,3 +1,9 @@
+/**
+ * A three-horse race, each horse running in its own lane for a given distance.
+ * 
+ * @author Hana
+ * @version 1.0
+ */
 // Imports
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -11,7 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 // Class race implents java swing and the horse race simulation 
-public class RaceGUI extends JFrame {
+public class Race extends JFrame {
 
     private int raceLength;
     private int totalHorses;
@@ -24,7 +30,7 @@ public class RaceGUI extends JFrame {
     // Define available horse breeds
     private String[] availableBreeds = { "Thoroughbred", "Quarter Horse", "Arabian", "Appaloosa" };
 
-    public RaceGUI() {
+    public Race() {
         showTitlePage(); // Show the title page initially
     }
 
@@ -36,7 +42,6 @@ public class RaceGUI extends JFrame {
 
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new GridLayout(4, 1)); // Increased the grid layout toa llow for new button
-
 
         JLabel titleLabel = new JLabel("Welcome to Horse Racing Simulator!");
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -566,7 +571,7 @@ public class RaceGUI extends JFrame {
 
         return racePanel;
     }
-    
+
     private JPanel createHorseInfoPanel() {
         JPanel horseInfoPanel = new JPanel();
         horseInfoPanel.setLayout(new GridLayout(horses.size(), 1)); // One column for each horse
@@ -727,7 +732,7 @@ public class RaceGUI extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new RaceGUI();
+                new Race();
             }
         });
     }
