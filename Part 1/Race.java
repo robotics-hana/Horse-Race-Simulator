@@ -151,24 +151,26 @@ public class Race
     /***
      * Print the race on the terminal
      */
-    private void printRace()
-    {
-        System.out.print('\u000C');  //clear the terminal window
-        
-        multiplePrint('=',raceLength+3); //top edge of track
+    /***
+     * Print the race on the terminal.
+     */
+    private void printRace() {
+        System.out.print('\u000C'); // Clear the terminal window
+
+        multiplePrint('=', raceLength + 3); // Top edge of track
         System.out.println();
-        
+
         printLane(lane1Horse);
         System.out.println();
-        
+
         printLane(lane2Horse);
         System.out.println();
-        
+
         printLane(lane3Horse);
         System.out.println();
-        
-        multiplePrint('=',raceLength+3); //bottom edge of track
-        System.out.println();    
+
+        multiplePrint('=', raceLength + 3); // Bottom edge of track
+        System.out.println();
     }
     
     /**
@@ -177,35 +179,25 @@ public class Race
      * |           X                      |
      * to show how far the horse has run
      */
-    private void printLane(Horse theHorse)
-    {
-        //calculate how many spaces are needed before
-        //and after the horse
+     //Print a horse's lane during the race.
+    private void printLane(Horse theHorse) {
         int spacesBefore = theHorse.getDistanceTravelled();
         int spacesAfter = raceLength - theHorse.getDistanceTravelled();
-        
-        //print a | for the beginning of the lane
+
         System.out.print('|');
-        
-        //print the spaces before the horse
-        multiplePrint(' ',spacesBefore);
-        
-        //if the horse has fallen then print dead
-        //else print the horse's symbol
-        if(theHorse.hasFallen())
-        {
-            System.out.print('\u2322');
-        }
-        else
-        {
+        multiplePrint(' ', spacesBefore);
+
+        if (theHorse.hasFallen()) {
+            System.out.print('X');
+        } else {
             System.out.print(theHorse.getSymbol());
         }
-        
-        //print the spaces after the horse
-        multiplePrint(' ',spacesAfter);
-        
-        //print the | for the end of the track
+
+        multiplePrint(' ', spacesAfter);
         System.out.print('|');
+
+        // Print the horse's name and confidence level after the last |
+        System.out.print(" (" + theHorse.getName() + " - Confidence level: " + theHorse.getConfidence() + ")");
     }
         
     
@@ -215,11 +207,11 @@ public class Race
      * 
      * @param aChar the character to Print
      */
-    private void multiplePrint(char aChar, int times)
-    {
+     * @param aChar the character to Print
+     */
+    private void multiplePrint(char aChar, int times) {
         int i = 0;
-        while (i < times)
-        {
+        while (i < times) {
             System.out.print(aChar);
             i = i + 1;
         }
