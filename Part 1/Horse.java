@@ -37,6 +37,13 @@ public class Horse
             this.symbol = '♘';
         }
 
+        // Set the confidence level, default to 0.5 if out of range
+        try {
+            setConfidence(horseConfidence);
+        } catch (IllegalArgumentException e) {
+            System.err.println(e.getMessage());
+        }
+
     }
     
     
@@ -83,14 +90,26 @@ public class Horse
     }
 
 
-    public void setConfidence(double newConfidence)
-    {
-        
+    // Changes the confidence of the horse, if new confidence is out of 0-1 range it sets it 0.5
+    public void setConfidence(double newConfidence) {
+        if (0 < newConfidence && newConfidence < 1) {
+            this.confidence = newConfidence;
+        } else {
+            this.confidence = 0.5;
+            throw new IllegalArgumentException("Error: For horse: " + this.name + ", set confidence between 0-1.");
+        }
     }
     
-    public void setSymbol(char newSymbol)
-    {
-        
+// Checks that the symbol is visible (not whitespace)
+    public void setSymbol(char newSymbol) {
+        // Check if the character is in the Unicode range of visible characters
+        if ((horseSymbol >= '\u0021' && horseSymbol <= '\u007E')
+                || (horseSymbol >= '\u00A1' && horseSymbol <= '\uFFFD')) {
+            this.symbol = horseSymbol;
+        } else {
+            throw new IllegalArgumentException(
+                    "Error: For horse: " + this.name + ", null is not acceptable as a symbol, it has been set to ♘ instead.");
+        }
     }
     
 }
