@@ -1,534 +1,732 @@
+
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public class Race extends JFrame {
 
- private int raceLength;
- private int totalHorses;
- private int currentHorseIndex;
- private ArrayList<Horse> horses;
- private Timer timer;
- private JFrame raceFrame;
- private String horseDetailsFilePath = "horse_details.txt";
+    private int raceLength;
+    private int totalHorses;
+    private int currentHorseIndex;
+    private ArrayList<Horse> horses;
+    private Timer timer;
+    private JFrame raceFrame;
+    private String horseDetailsFilePath = "horse_details.txt";
 
- // Define available horse breeds
- private String[] availableBreeds = {"Thoroughbred", "Quarter Horse", "Arabian", "Appaloosa"};
+    // Define available horse breeds
+    private String[] availableBreeds = { "Thoroughbred", "Quarter Horse", "Arabian", "Appaloosa" };
 
- public Race() {
- showTitlePage(); // Show the title page initially
- }
+    public Race() {
+        showTitlePage(); // Show the title page initially
+    }
 
- private void showTitlePage() {
- setTitle("Horse Racing Simulator");
- setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
- setSize(400, 225); // Adjusted width to accommodate the new panel
- setLocationRelativeTo(null); // Center the window
+    private void showTitlePage() {
+        setTitle("Horse Racing Simulator");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(400, 225); // Adjusted width to accommodate the new panel
+        setLocationRelativeTo(null); // Center the window
 
- JPanel titlePanel = new JPanel();
- titlePanel.setLayout(new GridLayout(3, 1));
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new GridLayout(4, 1)); // Increased the grid layout to accommodate the new button
 
- JLabel titleLabel = new JLabel("Welcome to Horse Racing Simulator!");
- titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
- titlePanel.add(titleLabel);
+        JLabel titleLabel = new JLabel("Welcome to Horse Racing Simulator!");
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titlePanel.add(titleLabel);
 
- JButton newRaceButton = new JButton("Start New Race");
- newRaceButton.addActionListener(new ActionListener() {
- @Override
- public void actionPerformed(ActionEvent e) {
- initializeMainGUI();
- }
- });
- titlePanel.add(newRaceButton);
+        JButton newRaceButton = new JButton("Start New Race");
+        newRaceButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                initializeMainGUI();
+            }
+        });
+        titlePanel.add(newRaceButton);
 
- JButton leaderboardButton = new JButton("View Leaderboard");
- leaderboardButton.addActionListener(new ActionListener() {
- @Override
- public void actionPerformed(ActionEvent e) {
- displayLeaderboard(); // Call the method to display the leaderboard
+        JButton leaderboardButton = new JButton("View History");
+        leaderboardButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                HistoryDisplay historyDisplay = new HistoryDisplay(); // Changed class name to "HistoryDisplay"
+                historyDisplay.displayHistory();
+            }
+        });
+        titlePanel.add(leaderboardButton);
 
- }
- });
- titlePanel.add(leaderboardButton);
+        JButton statisticsButton = new JButton("Leaderboard"); // Added new button for statistics
+        statisticsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                StatisticsDisplay statisticsDisplay = new StatisticsDisplay(); // Changed class name to "HistoryDisplay"
+                statisticsDisplay.displayStatistics();
+            }
+        });
+        titlePanel.add(statisticsButton);
 
- add(titlePanel);
- setVisible(true);
- }
+        add(titlePanel);
+        setVisible(true);
+    }
 
- private void displayLeaderboard() {
- String horseDetailsFilePath = "horse_details.txt"; // Specify the correct file path here
- 
- System.out.println("Displaying leaderboard...");
- 
- try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
- // Create column names
- String[] columnNames = {"Name", "Wins", "Falls", "Breed", "Confidence"};
- 
- // Create data array
- Object[][] data = new Object[totalHorses][5];
- 
- // Read horse details and populate data array
- String line;
- int rowIndex = 0;
- while ((line = reader.readLine()) != null) {
- if (line.startsWith("Name: ")) {
- data[rowIndex][0] = line.substring("Name: ".length());
- } else if (line.startsWith("Wins: ")) {
- data[rowIndex][1] = Integer.parseInt(line.substring("Wins: ".length()));
- } else if (line.startsWith("Falls: ")) {
- data[rowIndex][2] = Integer.parseInt(line.substring("Falls: ".length()));
- } else if (line.startsWith("Breed: ")) {
- data[rowIndex][3] = line.substring("Breed: ".length());
- } else if (line.startsWith("Confidence: ")) {
- data[rowIndex][4] = Double.parseDouble(line.substring("Confidence: ".length()));
- rowIndex++;
- }
- }
- 
- // Create JTable with data and column names
- JTable table = new JTable(data, columnNames);
- table.setPreferredScrollableViewportSize(new Dimension(500, 200));
- table.setFillsViewportHeight(true);
- 
- // Add table to a scroll pane
- JScrollPane scrollPane = new JScrollPane(table);
- 
- // Display the table in a popup frame
- JFrame frame = new JFrame("Leaderboard");
- frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
- frame.add(scrollPane);
- frame.pack();
- frame.setLocationRelativeTo(null); // Center the frame
- frame.setVisible(true);
- } catch (IOException e) {
- e.printStackTrace();
- }
- }
- 
- 
- private void initializeMainGUI() {
- getContentPane().removeAll(); // Clear the current content
- setTitle("Horse Racing Simulator");
- setSize(400, 225); // Adjusted width to accommodate the new panel
- setLocationRelativeTo(null); // Center the window
+    public class StatisticsDisplay {
 
- JPanel mainPanel = new JPanel();
- mainPanel.setLayout(new GridBagLayout());
- GridBagConstraints gbc = new GridBagConstraints();
- gbc.fill = GridBagConstraints.HORIZONTAL;
- gbc.gridx = 0;
- gbc.gridy = 0;
+        private String horseDetailsFilePath = "horse_details.txt"; // Specify the correct file path here
 
- JLabel raceLengthLabel = new JLabel("Race Length:");
- JTextField raceLengthField = new JTextField(10); // Increased size to accommodate 10 characters
- mainPanel.add(raceLengthLabel, gbc);
- gbc.gridx = 1;
- mainPanel.add(raceLengthField, gbc);
+        public void displayStatistics() {
+            System.out.println("Displaying leaderboard statistics...");
 
- gbc.gridx = 0;
- gbc.gridy = 1;
- JLabel numberOfHorsesLabel = new JLabel("Number of Horses:");
- JTextField numberOfHorsesField = new JTextField(10); // Increased size to accommodate 10 characters
- mainPanel.add(numberOfHorsesLabel, gbc);
- gbc.gridx = 1;
- mainPanel.add(numberOfHorsesField, gbc);
+            // Map to store max wins for each horse
+            Map<String, Integer> maxWinsMap = new HashMap<>();
+            // Map to store max falls for each horse
+            Map<String, Integer> maxFallsMap = new HashMap<>();
+            // Map to store breed for each horse
+            Map<String, String> breedMap = new HashMap<>();
+            // Map to store accessory for each horse
+            Map<String, String> accessoryMap = new HashMap<>();
 
- gbc.gridx = 0;
- gbc.gridy = 2;
- gbc.gridwidth = 2;
- JButton startButton = new JButton("Start Race");
- startButton.addActionListener(new ActionListener() {
- @Override
- public void actionPerformed(ActionEvent e) {
- int raceLength = Integer.parseInt(raceLengthField.getText());
- int numberOfHorses = Integer.parseInt(numberOfHorsesField.getText());
- initializeRace(raceLength, numberOfHorses);
- }
- });
- mainPanel.add(startButton, gbc);
+            try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
+                String line;
+                String currentHorseName = null;
+                int maxWins = 0;
+                int maxFalls = 0;
+                String breed = null;
+                String accessory = null;
 
- add(mainPanel);
- revalidate();
- repaint();
- }
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("Name: ")) {
+                        // Update max wins, max falls, breed, and accessory for the previous horse
+                        if (currentHorseName != null) {
+                            maxWinsMap.put(currentHorseName, maxWins);
+                            maxFallsMap.put(currentHorseName, maxFalls);
+                            breedMap.put(currentHorseName, breed);
+                            accessoryMap.put(currentHorseName, accessory);
+                        }
+                        // Reset values for the new horse
+                        currentHorseName = line.substring("Name: ".length());
+                        maxWins = 0;
+                        maxFalls = 0;
+                        breed = null;
+                        accessory = null;
+                    } else if (line.startsWith("Wins: ")) {
+                        int wins = Integer.parseInt(line.substring("Wins: ".length()));
+                        maxWins = Math.max(maxWins, wins);
+                    } else if (line.startsWith("Falls: ")) {
+                        int falls = Integer.parseInt(line.substring("Falls: ".length()));
+                        maxFalls = Math.max(maxFalls, falls);
+                    } else if (line.startsWith("Breed: ")) {
+                        breed = line.substring("Breed: ".length());
+                    } else if (line.startsWith("Equipment: ")) {
+                        accessory = line.substring("Equipment: ".length());
+                    }
+                }
 
- private void initializeRace(int raceLength, int numberOfHorses) {
- if (raceLength <= 0 || numberOfHorses <= 0) {
- JOptionPane.showMessageDialog(null, "Race length and number of horses must be greater than 0.");
- return;
- }
- this.raceLength = raceLength;
- this.totalHorses = numberOfHorses;
- this.currentHorseIndex = 0;
- this.horses = new ArrayList<>();
+                // Update max wins, max falls, breed, and accessory for the last horse in the
+                // file
+                if (currentHorseName != null) {
+                    maxWinsMap.put(currentHorseName, maxWins);
+                    maxFallsMap.put(currentHorseName, maxFalls);
+                    breedMap.put(currentHorseName, breed);
+                    accessoryMap.put(currentHorseName, accessory);
+                }
+            } catch (IOException | NumberFormatException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error reading file or parsing data.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
- initializeNextHorse(); // Start the process by initializing the first horse
- }
- 
- private void initializeNextHorse() {
- if (currentHorseIndex < totalHorses) {
- boolean isNewHorse = JOptionPane.showConfirmDialog(null, "Would you like to add a new horse?", "New Horse or Saved Horse", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+            // Create column names including breed and accessory
+            String[] columnNames = { "Name", "Wins", "Falls", "Breed", "Accessory", "Total races" };
 
- if (isNewHorse) {
- openInputFrame(currentHorseIndex); // Open input frame for new horse
- } else {
- openSavedHorseDialog(currentHorseIndex); // Open dialog to choose from saved horses
- }
- } else {
- // All horses added, proceed to create race frame and start race
- if (allHorsesAdded()) {
- createRaceFrame();
- startRace();
- }
- saveHorseDetailsToFile(); // Save horse details to file after adding all horses
- }
- }
+            // Create table model with specified column names
+            DefaultTableModel model = new DefaultTableModel(columnNames, 0);
 
- private void openSavedHorseDialog(int horseIndex) {
- try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
- String line;
- DefaultComboBoxModel<String> comboBoxModel = new DefaultComboBoxModel<>();
- while ((line = reader.readLine()) != null) {
- if (line.startsWith("Name: ")) {
- String horseName = line.substring("Name: ".length());
- comboBoxModel.addElement(horseName);
- }
- }
- JComboBox<String> savedHorsesComboBox = new JComboBox<>(comboBoxModel);
- JOptionPane.showMessageDialog(null, savedHorsesComboBox, "Choose Horse " + (horseIndex + 1), JOptionPane.QUESTION_MESSAGE);
- String selectedHorseName = (String) savedHorsesComboBox.getSelectedItem();
- if (selectedHorseName != null && !horseExists(selectedHorseName)) {
- // Load details of the selected horse and add it to the race
- Horse selectedHorse = loadHorseDetails(selectedHorseName);
- if (selectedHorse != null) {
- horses.add(selectedHorse);
- currentHorseIndex++; // Move to the next horse
- initializeNextHorse(); // Initialize the next horse
- }
- }
- } catch (IOException e) {
- e.printStackTrace();
- }
- }
+            // Populate the table model with horse statistics
+            for (Map.Entry<String, Integer> entry : maxWinsMap.entrySet()) {
+                String horseName = entry.getKey();
+                int maxWins = entry.getValue();
+                int maxFalls = maxFallsMap.get(horseName); // Get max falls for the horse
+                String breed = breedMap.get(horseName); // Get breed for the horse
+                String accessory = accessoryMap.get(horseName); // Get accessory for the horse
+                int races = maxWins + maxFalls; // Calculate total races
 
- private boolean horseExists(String horseName) {
- for (Horse horse : horses) {
- if (horse != null && horse.getName().equals(horseName)) {
- return true;
- }
- }
- return false;
- }
+                model.addRow(new Object[] { horseName, maxWins, maxFalls, breed, accessory, races });
+            }
 
- private Horse loadHorseDetails(String horseName) {
- try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
- String line;
- char symbol = '\u0000';
- double confidence = 0.0;
- String breed = null;
- String equipment = null;
- int wins = 0;
- int falls = 0;
- boolean foundHorse = false;
- while ((line = reader.readLine()) != null) {
- if (line.startsWith("Name: ") && line.substring("Name: ".length()).equals(horseName)) {
- foundHorse = true;
- } else if (foundHorse) {
- if (line.startsWith("Symbol: ")) {
- symbol = line.charAt("Symbol: ".length());
- } else if (line.startsWith("Confidence: ")) {
- confidence = Double.parseDouble(line.substring("Confidence: ".length()));
- } else if (line.startsWith("Breed: ")) {
- breed = line.substring("Breed: ".length());
- } else if (line.startsWith("Equipment: ")) {
- equipment = line.substring("Equipment: ".length());
- } else if (line.startsWith("Wins: ")) {
- wins = Integer.parseInt(line.substring("Wins: ".length()));
- } else if (line.startsWith("Falls: ")) {
- falls = Integer.parseInt(line.substring("Falls: ".length()));
- }
- }
- }
- if (foundHorse) {
- return new Horse(symbol, horseName, confidence, breed, equipment, wins, falls);
- } else {
- JOptionPane.showMessageDialog(null, "Failed to load details for horse: " + horseName, "Error", JOptionPane.ERROR_MESSAGE);
- }
- } catch (IOException e) {
- e.printStackTrace();
- }
- return null;
- }
+            // Create JTable with model
+            JTable table = new JTable(model);
 
- private void openInputFrame(int horseIndex) {
- JFrame inputFrame = new JFrame("Enter Details for Horse " + (horseIndex + 1));
- inputFrame.setSize(400, 300); // Set the size here
- JPanel inputPanel = new JPanel(new GridLayout(0, 2));
- JLabel nameLabel = new JLabel("Name:");
- JTextField nameField = new JTextField();
- JLabel symbolLabel = new JLabel("Symbol:");
- JTextField symbolField = new JTextField();
- JLabel confidenceLabel = new JLabel("Confidence:");
- JTextField confidenceField = new JTextField();
- JLabel breedLabel = new JLabel("Breed:");
- JComboBox<String> breedComboBox = new JComboBox<>(availableBreeds); // Use JComboBox for breed selection
- JLabel equipmentLabel = new JLabel("Equipment:");
- JComboBox<String> equipmentComboBox = new JComboBox<>(new String[]{"Carrot", "Saddle", "Horseshoe"});
- JButton submitButton = new JButton("Submit");
+            // Create JScrollPane and add table to it
+            JScrollPane scrollPane = new JScrollPane(table);
 
- inputPanel.add(nameLabel);
- inputPanel.add(nameField);
- inputPanel.add(symbolLabel);
- inputPanel.add(symbolField);
- inputPanel.add(confidenceLabel);
- inputPanel.add(confidenceField);
- inputPanel.add(breedLabel);
- inputPanel.add(breedComboBox);
- inputPanel.add(equipmentLabel);
- inputPanel.add(equipmentComboBox);
- inputPanel.add(submitButton);
+            // Create JFrame and add scrollPane to it
+            JFrame frame = new JFrame("Leaderboard");
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.add(scrollPane);
+            frame.pack();
+            frame.setLocationRelativeTo(null); // Center the frame
+            frame.setVisible(true);
+        }
+    }
 
- submitButton.addActionListener(new ActionListener() {
- @Override
- public void actionPerformed(ActionEvent e) {
- char symbol = symbolField.getText().charAt(0);
- double confidence = Double.parseDouble(confidenceField.getText());
- String selectedBreed = (String) breedComboBox.getSelectedItem(); // Get selected breed from JComboBox
- String selectedEquipment = (String) equipmentComboBox.getSelectedItem(); // Get selected equipment from JComboBox
- horses.add(new Horse(symbol, nameField.getText(), confidence, selectedBreed, selectedEquipment, 0, 0));
- inputFrame.dispose();
+    public class HistoryDisplay {
 
- // Initialize the next horse
- currentHorseIndex++;
- initializeNextHorse();
- }
- });
+        private void displayHistory() {
+            String horseDetailsFilePath = "horse_details.txt"; // Specify the correct file path here
 
- inputFrame.add(inputPanel);
- inputFrame.setLocationRelativeTo(null);
- inputFrame.setVisible(true); // Set visible after setting size
- }
+            System.out.println("Displaying history...");
 
- private boolean allHorsesAdded() {
- return horses.size() == totalHorses;
- }
+            try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
+                // Create column names
+                String[] columnNames = { "Name", "Wins", "Falls", "Breed", "Confidence" };
 
- private void createRaceFrame() {
- getContentPane().removeAll(); // Clear the current content
- raceFrame = new JFrame("Race Track");
- raceFrame.setLayout(new GridBagLayout()); // Use GridBagLayout for centering
- raceFrame.setSize(400, 225); // Adjusted height to accommodate the new panel
- raceFrame.setLocationRelativeTo(null); // Center the window
+                // Create table model with specified column names
+                DefaultTableModel model = new DefaultTableModel(columnNames, 0);
 
- JPanel titlePanel = createTitlePanel(); // Create title panel
- GridBagConstraints titlePanelConstraints = new GridBagConstraints();
- titlePanelConstraints.gridx = 0;
- titlePanelConstraints.gridy = 0;
- raceFrame.add(titlePanel, titlePanelConstraints); // Add title panel to frame
+                Map<String, Integer> maxWinsMap = new HashMap<>(); // Map to store max wins for each horse
+                Map<String, Integer> maxFallsMap = new HashMap<>(); // Map to store max falls for each horse
 
- JPanel racePanel = createRacePanel(); // Create race panel
- GridBagConstraints racePanelConstraints = new GridBagConstraints();
- racePanelConstraints.gridx = 0;
- racePanelConstraints.gridy = 1;
- raceFrame.add(racePanel, racePanelConstraints); // Add race panel to frame
+                String name = null;
+                int wins = 0;
+                int falls = 0;
+                String breed = null;
+                double confidence = 0.0;
 
- JPanel horseInfoPanel = createHorseInfoPanel(); // Create horse information panel
- GridBagConstraints horseInfoPanelConstraints = new GridBagConstraints();
- horseInfoPanelConstraints.gridx = 1;
- horseInfoPanelConstraints.gridy = 1;
- raceFrame.add(horseInfoPanel, horseInfoPanelConstraints); // Add horse information panel to frame
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("Name: ")) {
+                        if (name != null) { // Add previous horse's details
+                            model.addRow(new Object[] { name, maxWinsMap.getOrDefault(name, 0),
+                                    maxFallsMap.getOrDefault(name, 0), breed, confidence });
+                        }
+                        // Start collecting details of a new horse
+                        name = line.substring("Name: ".length());
+                        wins = 0; // Reset wins for the new horse
+                        falls = 0; // Reset falls for the new horse
+                    } else if (line.startsWith("Wins: ")) {
+                        wins = Math.max(wins, Integer.parseInt(line.substring("Wins: ".length())));
+                        maxWinsMap.put(name, wins);
+                    } else if (line.startsWith("Falls: ")) {
+                        falls = Math.max(falls, Integer.parseInt(line.substring("Falls: ".length())));
+                        maxFallsMap.put(name, falls);
+                    } else if (line.startsWith("Breed: ")) {
+                        breed = line.substring("Breed: ".length());
+                    } else if (line.startsWith("Confidence: ")) {
+                        confidence = Double.parseDouble(line.substring("Confidence: ".length()));
+                    }
+                }
+                // Add the last horse's details
+                if (name != null) {
+                    model.addRow(new Object[] { name, maxWinsMap.getOrDefault(name, 0),
+                            maxFallsMap.getOrDefault(name, 0), breed, confidence });
+                }
 
- raceFrame.setVisible(true);
- }
+                // Create JTable with model
+                JTable table = new JTable(model);
 
- private JPanel createTitlePanel() {
- JPanel titlePanel = new JPanel();
- JLabel titleLabel = new JLabel("The race has just begun!");
- titlePanel.add(titleLabel);
- return titlePanel;
- }
+                // Create JScrollPane and add table to it
+                JScrollPane scrollPane = new JScrollPane(table);
 
- private JPanel createRacePanel() {
- JPanel racePanel = new JPanel();
- racePanel.setLayout(new GridLayout(horses.size() + 2, raceLength + 3)); // Adjusted length
+                // Create JFrame and add scrollPane to it
+                JFrame frame = new JFrame("History");
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.add(scrollPane);
+                frame.pack();
+                frame.setLocationRelativeTo(null); // Center the frame
+                frame.setVisible(true);
+            } catch (IOException | NumberFormatException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Error reading file or parsing data.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
- // Calculate the length of the top and bottom edges
- int edgeLength = raceLength + 3;
+    private void initializeMainGUI() {
+        getContentPane().removeAll(); // Clear the current content
+        setTitle("Horse Racing Simulator");
+        setSize(400, 225); // Adjusted width to accommodate the new panel
+        setLocationRelativeTo(null); // Center the window
 
- // Print the top edge of the track
- JPanel topEdge = createPanelWithText("=".repeat(edgeLength)); // Updated length
- racePanel.add(topEdge);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
 
- // Print the race lanes and horse positions
- for (Horse horse : horses) {
- if (horse != null) {
- StringBuilder lane = new StringBuilder("| ");
- for (int i = 0; i < edgeLength; i++) { // Updated length
- if (i == horse.getDistanceTravelled()) {
- lane.append(horse.hasFallen() ? "X" : horse.getSymbol());
- } else {
- lane.append(" ");
- }
- }
- // Add horse name and confidence at the end of the lane
- lane.append(" |");
- JPanel lanePanel = createPanelWithText(lane.toString());
- racePanel.add(lanePanel);
- }
- }
+        JLabel raceLengthLabel = new JLabel("Race Length:");
+        JTextField raceLengthField = new JTextField(10); // Increased size to accommodate 10 characters
+        mainPanel.add(raceLengthLabel, gbc);
+        gbc.gridx = 1;
+        mainPanel.add(raceLengthField, gbc);
 
- // Print the bottom edge of the track
- JPanel bottomEdge = createPanelWithText("=".repeat(edgeLength)); // Updated length
- racePanel.add(bottomEdge);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        JLabel numberOfHorsesLabel = new JLabel("Number of Horses:");
+        JTextField numberOfHorsesField = new JTextField(10); // Increased size to accommodate 10 characters
+        mainPanel.add(numberOfHorsesLabel, gbc);
+        gbc.gridx = 1;
+        mainPanel.add(numberOfHorsesField, gbc);
 
- return racePanel;
- }
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        JButton startButton = new JButton("Start Race");
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int raceLength = Integer.parseInt(raceLengthField.getText());
+                int numberOfHorses = Integer.parseInt(numberOfHorsesField.getText());
+                initializeRace(raceLength, numberOfHorses);
+            }
+        });
+        mainPanel.add(startButton, gbc);
 
- private JPanel createHorseInfoPanel() {
- JPanel horseInfoPanel = new JPanel();
- horseInfoPanel.setLayout(new GridLayout(horses.size(), 1)); // One column for each horse
+        add(mainPanel);
+        revalidate();
+        repaint();
+    }
 
- // Add horse information labels
- for (Horse horse : horses) {
- if (horse != null) {
- JLabel horseInfoLabel = new JLabel(horse.getName() + " (Current confidence " + horse.getConfidence() + ")");
- horseInfoPanel.add(horseInfoLabel);
- }
- }
+    private void initializeRace(int raceLength, int numberOfHorses) {
+        if (raceLength <= 0 || numberOfHorses <= 0) {
+            JOptionPane.showMessageDialog(null, "Race length and number of horses must be greater than 0.");
+            return;
+        }
+        this.raceLength = raceLength;
+        this.totalHorses = numberOfHorses;
+        this.currentHorseIndex = 0;
+        this.horses = new ArrayList<>();
 
- return horseInfoPanel;
- }
+        initializeNextHorse(); // Start the process by initializing the first horse
+    }
 
- private JPanel createPanelWithText(String text) {
- JPanel panel = new JPanel();
- JLabel label = new JLabel(text);
- panel.add(label);
- return panel;
- }
+    private void initializeNextHorse() {
+        if (currentHorseIndex < totalHorses) {
+            boolean isNewHorse = JOptionPane.showConfirmDialog(null, "Would you like to add a new horse?",
+                    "New Horse or Saved Horse", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
 
- private void startRace() {
- timer = new Timer(200, new ActionListener() {
- @Override
- public void actionPerformed(ActionEvent e) {
- moveHorses();
- updateRace();
- if (allHorsesFallen() || raceFinished()) {
- ((Timer) e.getSource()).stop();
- displayRaceResult(); // Display race result
- updateWinsAndFalls(); // Update wins and falls
- saveHorseDetailsToFile(); // Save horse details to file
- showTitlePage(); // Show the title page when the race is over
- }
- }
- });
- timer.start();
- }
+            if (isNewHorse) {
+                openInputFrame(currentHorseIndex); // Open input frame for new horse
+            } else {
+                openSavedHorseDialog(currentHorseIndex); // Open dialog to choose from saved horses
+            }
+        } else {
+            // All horses added, proceed to create race frame and start race
+            if (allHorsesAdded()) {
+                createRaceFrame();
+                startRace();
+            }
+            saveHorseDetailsToFile(); // Save horse details to file after adding all horses
+        }
+    }
 
- private void moveHorses() {
- for (Horse horse : horses) {
- if (horse != null && !horse.hasFallen()) {
- // Move each horse based on its confidence
- if (Math.random() < horse.getConfidence()) {
- horse.moveForward();
- }
- // The probability of a horse falling increases with the race's progress
- if (Math.random() < (double) horse.getDistanceTravelled() / raceLength) {
- horse.fall();
- }
- }
- }
- }
+    private void openSavedHorseDialog(int horseIndex) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
+            String line;
+            DefaultComboBoxModel<String> comboBoxModel = new DefaultComboBoxModel<>();
+            HashSet<String> uniqueHorseNames = new HashSet<>(); // Store unique horse names
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("Name: ")) {
+                    String horseName = line.substring("Name: ".length());
+                    if (!uniqueHorseNames.contains(horseName)) { // Add only if the name is unique
+                        uniqueHorseNames.add(horseName);
+                        comboBoxModel.addElement(horseName);
+                    }
+                }
+            }
+            JComboBox<String> savedHorsesComboBox = new JComboBox<>(comboBoxModel);
+            JOptionPane.showMessageDialog(null, savedHorsesComboBox, "Choose Horse " + (horseIndex + 1),
+                    JOptionPane.QUESTION_MESSAGE);
+            String selectedHorseName = (String) savedHorsesComboBox.getSelectedItem();
+            if (selectedHorseName != null && !horseExists(selectedHorseName)) {
+                // Load details of the selected horse and add it to the race
+                Horse selectedHorse = loadHorseDetails(selectedHorseName);
+                if (selectedHorse != null) {
+                    horses.add(selectedHorse);
+                    currentHorseIndex++; // Move to the next horse
+                    initializeNextHorse(); // Initialize the next horse
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
- private void updateRace() {
- raceFrame.getContentPane().removeAll(); // Clear the current content
- JPanel racePanel = createRacePanel(); // Recreate race panel with updated positions
- GridBagConstraints racePanelConstraints = new GridBagConstraints();
- racePanelConstraints.gridx = 0;
- racePanelConstraints.gridy = 1;
- raceFrame.add(racePanel, racePanelConstraints); // Add updated race panel to frame
+    private boolean horseExists(String horseName) {
+        for (Horse horse : horses) {
+            if (horse != null && horse.getName().equals(horseName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
- JPanel horseInfoPanel = createHorseInfoPanel(); // Recreate horse information panel
- GridBagConstraints horseInfoPanelConstraints = new GridBagConstraints();
- horseInfoPanelConstraints.gridx = 1;
- horseInfoPanelConstraints.gridy = 1;
- raceFrame.add(horseInfoPanel, horseInfoPanelConstraints); // Add updated horse information panel to frame
+    private Horse loadHorseDetails(String horseName) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
+            String line;
+            char symbol = '\u0000';
+            double confidence = 0.0;
+            String breed = null;
+            String equipment = null;
+            int wins = 0;
+            int falls = 0;
+            boolean foundHorse = false;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("Name: ") && line.substring("Name: ".length()).equals(horseName)) {
+                    foundHorse = true;
+                } else if (foundHorse) {
+                    if (line.startsWith("Symbol: ")) {
+                        symbol = line.charAt("Symbol: ".length());
+                    } else if (line.startsWith("Confidence: ")) {
+                        confidence = Double.parseDouble(line.substring("Confidence: ".length()));
+                    } else if (line.startsWith("Breed: ")) {
+                        breed = line.substring("Breed: ".length());
+                    } else if (line.startsWith("Equipment: ")) {
+                        equipment = line.substring("Equipment: ".length());
+                    } else if (line.startsWith("Wins: ")) {
+                        wins = Integer.parseInt(line.substring("Wins: ".length()));
+                    } else if (line.startsWith("Falls: ")) {
+                        falls = Integer.parseInt(line.substring("Falls: ".length()));
+                    }
+                }
+            }
+            if (foundHorse) {
+                return new Horse(symbol, horseName, confidence, breed, equipment, wins, falls);
+            } else {
+                JOptionPane.showMessageDialog(null, "Failed to load details for horse: " + horseName, "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
- raceFrame.revalidate(); // Revalidate the frame to update the layout
- raceFrame.repaint(); // Repaint the frame to reflect the changes
- }
+    private void openInputFrame(int horseIndex) {
+        JFrame inputFrame = new JFrame("Enter Details for Horse " + (horseIndex + 1));
+        inputFrame.setSize(400, 300); // Set the size here
+        JPanel inputPanel = new JPanel(new GridLayout(0, 2));
+        JLabel nameLabel = new JLabel("Name:");
+        JTextField nameField = new JTextField();
+        JLabel symbolLabel = new JLabel("Symbol:");
+        JTextField symbolField = new JTextField();
+        JLabel confidenceLabel = new JLabel("Confidence:");
+        JTextField confidenceField = new JTextField();
+        JLabel breedLabel = new JLabel("Breed:");
+        JComboBox<String> breedComboBox = new JComboBox<>(availableBreeds); // Use JComboBox for breed selection
+        JLabel equipmentLabel = new JLabel("Equipment:");
+        JComboBox<String> equipmentComboBox = new JComboBox<>(new String[] { "Carrot", "Saddle", "Horseshoe" });
+        JButton submitButton = new JButton("Submit");
 
- private boolean allHorsesFallen() {
- for (Horse horse : horses) {
- if (horse != null && !horse.hasFallen()) {
- return false;
- }
- }
- return true;
- }
+        inputPanel.add(nameLabel);
+        inputPanel.add(nameField);
+        inputPanel.add(symbolLabel);
+        inputPanel.add(symbolField);
+        inputPanel.add(confidenceLabel);
+        inputPanel.add(confidenceField);
+        inputPanel.add(breedLabel);
+        inputPanel.add(breedComboBox);
+        inputPanel.add(equipmentLabel);
+        inputPanel.add(equipmentComboBox);
+        inputPanel.add(submitButton);
 
- private boolean raceFinished() {
- for (Horse horse : horses) {
- if (horse != null && horse.getDistanceTravelled() >= raceLength) {
- return true;
- }
- }
- return false;
- }
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                char symbol = symbolField.getText().charAt(0);
+                String name = nameField.getText();
+                if (nameExistsInFile(name)) {
+                    JOptionPane.showMessageDialog(null, "A horse with the name \"" + name + "\" already exists.",
+                            "Duplicate Name", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                double confidence;
+                try {
+                    confidence = Double.parseDouble(confidenceField.getText());
+                    if (confidence < 0.1 || confidence > 1.0) {
+                        JOptionPane.showMessageDialog(null, "Confidence must be between 0.1 and 1.0", "Invalid Input",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Confidence must be a number", "Invalid Input",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                String selectedBreed = (String) breedComboBox.getSelectedItem();
+                String selectedEquipment = (String) equipmentComboBox.getSelectedItem();
+                horses.add(new Horse(symbol, name, confidence, selectedBreed, selectedEquipment, 0, 0));
+                inputFrame.dispose();
 
- private void displayRaceResult() {
- StringBuilder resultMessage = new StringBuilder("Race Result:\n");
- for (Horse horse : horses) {
- if (horse != null) {
- if (horse.hasFallen()) {
- resultMessage.append(horse.getName()).append(" has fallen!\n");
- } else {
- resultMessage.append(horse.getName()).append(" finished the race!\n");
- }
- }
- }
- JOptionPane.showMessageDialog(null, resultMessage.toString(), "Race Result", JOptionPane.INFORMATION_MESSAGE);
- }
+                // Initialize the next horse
+                currentHorseIndex++;
+                initializeNextHorse();
+            }
+        });
 
- private void updateWinsAndFalls() {
- for (Horse horse : horses) {
- if (horse != null) {
- if (horse.hasFallen()) {
- horse.incrementFalls();
- } else {
- horse.incrementWins();
- }
- }
- }
- }
+        inputFrame.add(inputPanel);
+        inputFrame.setLocationRelativeTo(null);
+        inputFrame.setVisible(true); // Set visible after setting size
+    }
 
- private void saveHorseDetailsToFile() {
- try (PrintWriter writer = new PrintWriter(new FileWriter(horseDetailsFilePath))) {
- for (Horse horse : horses) {
- if (horse != null) {
- writer.println("Name: " + horse.getName());
- writer.println("Symbol: " + horse.getSymbol());
- writer.println("Confidence: " + horse.getConfidence());
- writer.println("Breed: " + horse.getBreed());
- writer.println("Equipment: " + horse.getEquipment());
- writer.println("Wins: " + horse.getWins());
- writer.println("Falls: " + horse.getFalls());
- }
- }
- } catch (IOException e) {
- e.printStackTrace();
- }
- }
+    private boolean nameExistsInFile(String name) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("Name: ") && line.substring("Name: ".length()).equals(name)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
- public static void main(String[] args) {
- SwingUtilities.invokeLater(new Runnable() {
- @Override
- public void run() {
- new RaceGUI();
- }
- });
- }
+    private boolean allHorsesAdded() {
+        return horses.size() == totalHorses;
+    }
+
+    private void createRaceFrame() {
+        getContentPane().removeAll(); // Clear the current content
+        raceFrame = new JFrame("Race Track");
+        raceFrame.setLayout(new GridBagLayout()); // Use GridBagLayout for centering
+        raceFrame.setSize(400, 225); // Adjusted height to accommodate the new panel
+        raceFrame.setLocationRelativeTo(null); // Center the window
+
+        JPanel titlePanel = createTitlePanel(); // Create title panel
+        GridBagConstraints titlePanelConstraints = new GridBagConstraints();
+        titlePanelConstraints.gridx = 0;
+        titlePanelConstraints.gridy = 0;
+        raceFrame.add(titlePanel, titlePanelConstraints); // Add title panel to frame
+
+        JPanel racePanel = createRacePanel(); // Create race panel
+        GridBagConstraints racePanelConstraints = new GridBagConstraints();
+        racePanelConstraints.gridx = 0;
+        racePanelConstraints.gridy = 1;
+        raceFrame.add(racePanel, racePanelConstraints); // Add race panel to frame
+
+        JPanel horseInfoPanel = createHorseInfoPanel(); // Create horse information panel
+        GridBagConstraints horseInfoPanelConstraints = new GridBagConstraints();
+        horseInfoPanelConstraints.gridx = 1;
+        horseInfoPanelConstraints.gridy = 1;
+        raceFrame.add(horseInfoPanel, horseInfoPanelConstraints); // Add horse information panel to frame
+
+        raceFrame.setVisible(true);
+    }
+
+    private JPanel createTitlePanel() {
+        JPanel titlePanel = new JPanel();
+        JLabel titleLabel = new JLabel("The race has just begun!");
+        titlePanel.add(titleLabel);
+        return titlePanel;
+    }
+
+    private JPanel createRacePanel() {
+        JPanel racePanel = new JPanel();
+        racePanel.setLayout(new GridLayout(horses.size() + 2, raceLength + 3)); // Adjusted length
+
+        // Calculate the length of the top and bottom edges
+        int edgeLength = raceLength + 3;
+
+        // Print the top edge of the track
+        JPanel topEdge = createPanelWithText("=".repeat(edgeLength)); // Updated length
+        racePanel.add(topEdge);
+
+        // Print the race lanes and horse positions
+        for (Horse horse : horses) {
+            if (horse != null) {
+                StringBuilder lane = new StringBuilder("| ");
+                for (int i = 0; i < edgeLength; i++) { // Updated length
+                    if (i == horse.getDistanceTravelled()) {
+                        lane.append(horse.hasFallen() ? "X" : horse.getSymbol());
+                    } else {
+                        lane.append(" ");
+                    }
+                }
+                // Add horse name and confidence at the end of the lane
+                lane.append(" |");
+                JPanel lanePanel = createPanelWithText(lane.toString());
+                racePanel.add(lanePanel);
+            }
+        }
+
+        // Print the bottom edge of the track
+        JPanel bottomEdge = createPanelWithText("=".repeat(edgeLength)); // Updated length
+        racePanel.add(bottomEdge);
+
+        return racePanel;
+    }
+
+    private JPanel createHorseInfoPanel() {
+        JPanel horseInfoPanel = new JPanel();
+        horseInfoPanel.setLayout(new GridLayout(horses.size(), 1)); // One column for each horse
+
+        // Add horse information labels
+        for (Horse horse : horses) {
+            if (horse != null) {
+                JLabel horseInfoLabel = new JLabel(
+                        horse.getName() + " (Current confidence " + horse.getConfidence() + ")");
+                horseInfoPanel.add(horseInfoLabel);
+            }
+        }
+
+        return horseInfoPanel;
+    }
+
+    private JPanel createPanelWithText(String text) {
+        JPanel panel = new JPanel();
+        JLabel label = new JLabel(text);
+        panel.add(label);
+        return panel;
+    }
+
+    private void startRace() {
+        timer = new Timer(200, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                moveHorses();
+                updateRace();
+                if (allHorsesFallen() || raceFinished()) {
+                    ((Timer) e.getSource()).stop();
+                    displayRaceResult(); // Display race result
+                    updateWinsAndFalls(); // Update wins and falls when the race is finished
+                    saveHorseDetailsToFile(); // Save horse details to file
+                    showTitlePage(); // Show the title page when the race is over
+                }
+            }
+        });
+        timer.start();
+    }
+
+    private void moveHorses() {
+        for (Horse horse : horses) {
+            if (horse != null && !horse.hasFallen()) {
+                // Move each horse based on its confidence
+                if (Math.random() < horse.getConfidence()) {
+                    horse.moveForward();
+                }
+                // The probability of a horse falling increases with the race's progress
+                if (Math.random() < (double) horse.getDistanceTravelled() / raceLength) {
+                    horse.fall();
+                }
+            }
+        }
+    }
+
+    private void updateRace() {
+        raceFrame.getContentPane().removeAll(); // Clear the current content
+        JPanel racePanel = createRacePanel(); // Recreate race panel with updated positions
+        GridBagConstraints racePanelConstraints = new GridBagConstraints();
+        racePanelConstraints.gridx = 0;
+        racePanelConstraints.gridy = 1;
+        raceFrame.add(racePanel, racePanelConstraints); // Add updated race panel to frame
+
+        JPanel horseInfoPanel = createHorseInfoPanel(); // Recreate horse information panel
+        GridBagConstraints horseInfoPanelConstraints = new GridBagConstraints();
+        horseInfoPanelConstraints.gridx = 1;
+        horseInfoPanelConstraints.gridy = 1;
+        raceFrame.add(horseInfoPanel, horseInfoPanelConstraints); // Add updated horse information panel to frame
+
+        raceFrame.revalidate(); // Revalidate the frame to update the layout
+        raceFrame.repaint(); // Repaint the frame to reflect the changes
+    }
+
+    private boolean allHorsesFallen() {
+        for (Horse horse : horses) {
+            if (horse != null && !horse.hasFallen()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean raceFinished() {
+        for (Horse horse : horses) {
+            if (horse != null && horse.getDistanceTravelled() >= raceLength) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void displayRaceResult() {
+        StringBuilder resultMessage = new StringBuilder("Race Result:\n");
+        for (Horse horse : horses) {
+            if (horse != null) {
+                if (horse.hasFallen()) {
+                    resultMessage.append(horse.getName()).append(" has fallen!\n");
+                } else {
+                    resultMessage.append(horse.getName()).append(" finished the race!\n");
+                }
+            }
+        }
+        JOptionPane.showMessageDialog(null, resultMessage.toString(), "Race Result", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void updateWinsAndFalls() {
+        for (Horse horse : horses) {
+            if (horse != null) {
+                if (horse.hasFallen()) {
+                    horse.incrementFalls();
+                } else {
+                    horse.incrementWins();
+                }
+            }
+        }
+    }
+
+    private void saveHorseDetailsToFile() {
+        // Create a HashSet to store the names of the horses that have been added
+        HashSet<String> existingHorses = new HashSet<>();
+
+        // Read existing horse names from the file
+        try (BufferedReader reader = new BufferedReader(new FileReader(horseDetailsFilePath))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("Name: ")) {
+                    String horseName = line.substring("Name: ".length());
+                    existingHorses.add(horseName);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(horseDetailsFilePath, true))) {
+            for (Horse horse : horses) {
+                if (horse != null) {
+                    writer.println("Name: " + horse.getName());
+                    writer.println("Symbol: " + horse.getSymbol());
+                    writer.println("Confidence: " + horse.getConfidence());
+                    writer.println("Breed: " + horse.getBreed());
+                    writer.println("Equipment: " + horse.getEquipment());
+                    writer.println("Wins: " + horse.getWins());
+                    writer.println("Falls: " + horse.getFalls());
+
+                    // Add the horse name to the set of existing horses
+                    existingHorses.add(horse.getName());
+                }
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new RaceGUI();
+            }
+        });
+    }
 }
+
