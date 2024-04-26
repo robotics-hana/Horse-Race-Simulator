@@ -5,7 +5,7 @@ import java.lang.Math;
  * A three-horse race, each horse running in its own lane
  * for a given distance
  * 
- * @author McFarewell
+ * @author Hana
  * @version 1.0
  */
 public class Race
@@ -38,20 +38,13 @@ public class Race
      */
     public void addHorse(Horse theHorse, int laneNumber)
     {
-        if (laneNumber == 1)
-        {
+        if (laneNumber == 1) {
             lane1Horse = theHorse;
-        }
-        else if (laneNumber == 2)
-        {
+        } else if (laneNumber == 2) {
             lane2Horse = theHorse;
-        }
-        else if (laneNumber == 3)
-        {
+        } else if (laneNumber == 3) {
             lane3Horse = theHorse;
-        }
-        else
-        {
+        } else {
             System.out.println("Cannot add horse to lane " + laneNumber + " because there is no such lane");
         }
     }
@@ -82,17 +75,29 @@ public class Race
             //print the race positions
             printRace();
             
-            //if any of the three horses has won the race is finished
-            if ( raceWonBy(lane1Horse) || raceWonBy(lane2Horse) || raceWonBy(lane3Horse) )
-            {
+            
+            if (raceWonBy(lane1Horse)) {
+                System.out.println("THE WINNER IS " + lane1Horse.getName() + "!");
+                finished = true;
+            } else if (raceWonBy(lane2Horse)) {
+                System.out.println("THE WINNER IS " + lane2Horse.getName() + "!");
+                finished = true;
+            } else if (raceWonBy(lane3Horse)) {
+                System.out.println("THE WINNER IS " + lane3Horse.getName() + "!");
                 finished = true;
             }
-           
-            //wait for 100 milliseconds
-            try{ 
+
+            // Check if all horses have fallen, and end the race if so
+            if (lane1Horse.hasFallen() && lane2Horse.hasFallen() && lane3Horse.hasFallen()) {
+                System.out.println("Nobody won :(");
+                finished = true;
+            }
+
+            try {
                 TimeUnit.MILLISECONDS.sleep(100);
-            }catch(Exception e){}
-        }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
     }
     
     /**
