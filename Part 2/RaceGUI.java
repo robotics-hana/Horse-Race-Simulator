@@ -1,4 +1,4 @@
-
+// Imports
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -10,7 +10,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-public class Race extends JFrame {
+// Class race implents java swing and the horse race simulation 
+public class RaceGUI extends JFrame {
 
     private int raceLength;
     private int totalHorses;
@@ -23,7 +24,7 @@ public class Race extends JFrame {
     // Define available horse breeds
     private String[] availableBreeds = { "Thoroughbred", "Quarter Horse", "Arabian", "Appaloosa" };
 
-    public Race() {
+    public RaceGUI() {
         showTitlePage(); // Show the title page initially
     }
 
@@ -34,7 +35,8 @@ public class Race extends JFrame {
         setLocationRelativeTo(null); // Center the window
 
         JPanel titlePanel = new JPanel();
-        titlePanel.setLayout(new GridLayout(4, 1)); // Increased the grid layout to accommodate the new button
+        titlePanel.setLayout(new GridLayout(4, 1)); // Increased the grid layout toa llow for new button
+
 
         JLabel titleLabel = new JLabel("Welcome to Horse Racing Simulator!");
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -73,6 +75,7 @@ public class Race extends JFrame {
         setVisible(true);
     }
 
+    // Frame used to show the leaderboard and horse statistics
     public class StatisticsDisplay {
 
         private String horseDetailsFilePath = "horse_details.txt"; // Specify the correct file path here
@@ -547,7 +550,7 @@ public class Race extends JFrame {
                     if (i == horse.getDistanceTravelled()) {
                         lane.append(horse.hasFallen() ? "X" : horse.getSymbol());
                     } else {
-                        lane.append(" ");
+                        lane.append("  ");
                     }
                 }
                 // Add horse name and confidence at the end of the lane
@@ -563,7 +566,7 @@ public class Race extends JFrame {
 
         return racePanel;
     }
-
+    
     private JPanel createHorseInfoPanel() {
         JPanel horseInfoPanel = new JPanel();
         horseInfoPanel.setLayout(new GridLayout(horses.size(), 1)); // One column for each horse
@@ -729,4 +732,3 @@ public class Race extends JFrame {
         });
     }
 }
-
