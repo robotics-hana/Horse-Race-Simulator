@@ -18,6 +18,7 @@ import java.util.Map;
 // Class race implents java swing and the horse race simulation 
 public class Race extends JFrame {
 
+    //instance variables for horse
     private int raceLength;
     private int totalHorses;
     private int currentHorseIndex;
@@ -26,11 +27,11 @@ public class Race extends JFrame {
     private JFrame raceFrame;
     private String horseDetailsFilePath = "horse_details.txt";
 
-    // Define available horse breeds 4 to chose from
+    // available horse breeds 4 to chose from
     private String[] availableBreeds = { "Thoroughbred", "Quarter Horse", "Arabian", "Appaloosa" };
 
     public Race() {
-        showTitlePage(); // Show the title page initially
+        showTitlePage(); // Show title page first
     }
 
     private void showTitlePage() {
@@ -40,7 +41,7 @@ public class Race extends JFrame {
         setLocationRelativeTo(null); // Center the window
 
         JPanel titlePanel = new JPanel();
-        titlePanel.setLayout(new GridLayout(4, 1)); // Increased the grid layout toa llow for new button
+        titlePanel.setLayout(new GridLayout(4, 1));
 
         JLabel titleLabel = new JLabel("Welcome to Horse Racing Simulator!");
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -259,7 +260,7 @@ public class Race extends JFrame {
     private void initializeMainGUI() {
         getContentPane().removeAll(); // Clear the current content
         setTitle("Horse Racing Simulator");
-        setSize(400, 225); // Adjusted width to accommodate the new panel
+        setSize(400, 225); // ajusted width to accommodate the new panel
         setLocationRelativeTo(null); // Center the window
 
         JPanel mainPanel = new JPanel();
@@ -419,6 +420,7 @@ public class Race extends JFrame {
         return null;
     }
 
+    // allow user to input horse details
     private void openInputFrame(int horseIndex) {
         JFrame inputFrame = new JFrame("Enter Details for Horse " + (horseIndex + 1));
         inputFrame.setSize(400, 300); // Set the size here
@@ -483,7 +485,7 @@ public class Race extends JFrame {
 
         inputFrame.add(inputPanel);
         inputFrame.setLocationRelativeTo(null);
-        inputFrame.setVisible(true); // Set visible after setting size
+        inputFrame.setVisible(true); 
     }
 
     // check if the horse name already exist in the file
@@ -508,7 +510,7 @@ public class Race extends JFrame {
     private void createRaceFrame() {
         getContentPane().removeAll(); // Clear the current content
         raceFrame = new JFrame("Race Track");
-        raceFrame.setLayout(new GridBagLayout()); // Use GridBagLayout for centering
+        raceFrame.setLayout(new GridBagLayout()); 
         raceFrame.setSize(400, 225); // Adjusted height to accommodate the new panel
         raceFrame.setLocationRelativeTo(null); // Center the window
 
@@ -516,7 +518,7 @@ public class Race extends JFrame {
         GridBagConstraints titlePanelConstraints = new GridBagConstraints();
         titlePanelConstraints.gridx = 0;
         titlePanelConstraints.gridy = 0;
-        raceFrame.add(titlePanel, titlePanelConstraints); // Add title panel to frame
+        raceFrame.add(titlePanel, titlePanelConstraints); 
 
         JPanel racePanel = createRacePanel(); // creating new race panel
         GridBagConstraints racePanelConstraints = new GridBagConstraints();
@@ -528,7 +530,7 @@ public class Race extends JFrame {
         GridBagConstraints horseInfoPanelConstraints = new GridBagConstraints();
         horseInfoPanelConstraints.gridx = 1;
         horseInfoPanelConstraints.gridy = 1;
-        raceFrame.add(horseInfoPanel, horseInfoPanelConstraints); // Add horse information panel to frame
+        raceFrame.add(horseInfoPanel, horseInfoPanelConstraints); //add horse frame
 
         raceFrame.setVisible(true);
     }
@@ -563,7 +565,7 @@ public class Race extends JFrame {
                         lane.append("  ");
                     }
                 }
-                // Add horse name and confidence at the end of the lane
+                // Add horse name and confidence at the end
                 lane.append(" |");
                 JPanel lanePanel = createPanelWithText(lane.toString());
                 racePanel.add(lanePanel);
@@ -593,6 +595,7 @@ public class Race extends JFrame {
         return horseInfoPanel;
     }
 
+    //add text panel
     private JPanel createPanelWithText(String text) {
         JPanel panel = new JPanel();
         JLabel label = new JLabel(text);
@@ -600,6 +603,7 @@ public class Race extends JFrame {
         return panel;
     }
 
+    //begin the race
     private void startRace() {
         timer = new Timer(200, new ActionListener() {
             @Override
@@ -618,14 +622,15 @@ public class Race extends JFrame {
         timer.start();
     }
 
+    //move horse accross the race
     private void moveHorses() {
         for (Horse horse : horses) {
             if (horse != null && !horse.hasFallen()) {
-                // Move each horse based on its confidence
+                // move each horse based on its confidence
                 if (Math.random() < horse.getConfidence()) {
                     horse.moveForward();
                 }
-                // The probability of a horse falling increases with the race's progress
+                // probability of a horse falling increases with the race's progress
                 if (Math.random() < (double) horse.getDistanceTravelled() / raceLength) {
                     horse.fall();
                 }
@@ -635,7 +640,7 @@ public class Race extends JFrame {
 
     // update
     private void updateRace() {
-        raceFrame.getContentPane().removeAll(); // Clear the current content
+        raceFrame.getContentPane().removeAll(); // clear the current content
         JPanel racePanel = createRacePanel(); // create race panel with updated positions
         GridBagConstraints racePanelConstraints = new GridBagConstraints();
         racePanelConstraints.gridx = 0;
@@ -739,11 +744,12 @@ public class Race extends JFrame {
         }
     }
 
+    //main method to start the horse race game 
     public static void main(String[] args) {
         // Set the default font for the UI
         setUIFont(new Font("Arial", Font.PLAIN, 13));
         // Set the background color for the UI
-        UIManager.put("Panel.background", new Color(255, 209, 220));
+        UIManager.put("Panel.background", new Color(255, 209, 220)); // pastel pink colour scheme
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
